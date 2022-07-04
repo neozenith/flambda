@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 # Third Party
+import boto3
 from invoke import task
 from invoke_common_tasks import format, init_config, lint, typecheck  # noqa
 
@@ -36,6 +37,7 @@ def _build_lambda(context, target):
 
     # TODO: Tidy this up so multiple lambdas can be built in parallel with this function
     shutil.make_archive(f"./dist/{target}", "zip", f"./{out_dir_base}")
+    print(f"./dist/{target}.zip")
 
 
 @task
@@ -58,6 +60,18 @@ def clean(c):
 def build_lambda(c):
     """Build the lambda function specified. Default: app."""
     _build_lambda(c, "app")
+
+
+@task
+def upload(c, target="app", profile="play", bucket="play-projects-joshpeak", prefix="lambda/code"):
+    """Upload artifact to s3."""
+    print(f"Upload profile: {profile}")
+    session = boto3.Session(profile_name=profile)
+    s3_client = session.client("s3")
+    src_file = f"./dist/{target}.zip"
+    print(f"Uploading: {src_file} --> s3://{bucket}/{prefix}/{target}.zip")
+    response = s3_client.upload_file(src_file, bucket, f"{prefix}/{target}.zip")
+    print(response)
 
 
 @task

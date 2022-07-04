@@ -1,12 +1,13 @@
-# Third Party
-from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Request
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-import plotly.express as px
+# Standard Library
 import io
 
+# Third Party
+import plotly.express as px
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from mangum import Mangum
 
 from .core.auth import authenticate_user
@@ -32,7 +33,7 @@ async def root(request: Request, authenticated: bool = Depends(authenticate_user
 
 
 @app.get("/{model}", response_class=HTMLResponse)
-async def root(request: Request, model: str, authenticated: bool = Depends(authenticate_user)):
+async def model_routes(request: Request, model: str):
     return templates.TemplateResponse("index.html", {"request": request, "model": model})
 
 
