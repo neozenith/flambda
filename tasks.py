@@ -50,6 +50,8 @@ def clean(c):
     print("Removing build and dist...")
     shutil.rmtree("build", ignore_errors=True)
     shutil.rmtree("dist", ignore_errors=True)
+    print("Cleaning notebook outputs.")
+    c.run("jupyter nbconvert --ClearOutputPreprocessor.enabled=True --clear-output notebooks/*.ipynb")
 
 
 @task
@@ -61,3 +63,18 @@ def build_lambda(c):
 @task
 def hash_password(c, password):
     print(get_password_hash(password))
+
+
+@task
+def lab(c):
+    """Startup jupyter lab instance."""
+    c.run("jupyter-lab --notebook-dir=notebooks", pty=True)
+
+
+@task
+def publish_notebook(c):
+    """Perform a clean run of a notebook with cleared state."""
+    print("Cleaning notebook outputs.")
+    c.run("jupyter nbconvert --ClearOutputPreprocessor.enabled=True --clear-output notebooks/*.ipynb")
+    print("Executing notebooks...")
+    c.run("jupyter nbconvert --to notebook --inplace --execute notebooks/*.ipynb")
