@@ -7,13 +7,14 @@ license = "MIT"
 
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9,<3.11"
 fastapi = {extras = ["all"], version = "^0.75.1"}
 mangum = "^0.14.1"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-dotenv = "^0.20.0"
-pandas = "^1.4.3"
 plotly = "^5.9.0"
+pandas = "^1.4.3"
+awswrangler = "^2.16.1"
 
 [tool.poetry.dev-dependencies]
 invoke = "^1.7.0"
@@ -22,6 +23,8 @@ boto3 = "^1.21.40"
 invoke-common-tasks = {version = "^0.3.2", extras = ["all"]}
 jupyterlab = "^3.4.3"
 sagemaker = "^2.97.0"
+pipdeptree = "^2.2.1"
+scikit-learn = "^1.1.1"
 
 
 [tool.black]
