@@ -25,6 +25,9 @@ jupyterlab = "^3.4.3"
 sagemaker = "^2.97.0"
 pipdeptree = "^2.2.1"
 scikit-learn = "^1.1.1"
+torch = "^1.12.0"
+transformers = "^4.20.1"
+ipywidgets = "^7.7.1"
 
 
 [tool.black]
