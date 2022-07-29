@@ -9,12 +9,12 @@ import pandas as pd
 import plotly.express as px
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from mangum import Mangum
 
-#  from .core.auth import authenticate_user
+from .core.auth import authenticate_user
 
 #  from app.routes.v1.api import router as api_routes
 
@@ -66,8 +66,13 @@ async def root(request: Request):
     return {"message": "Hello"}
 
 
-@app.get("/{model}", response_class=HTMLResponse)
+@app.get(
+    "/{model}",
+    response_class=HTMLResponse,
+)
 async def model_routes(request: Request, model: str):
+    if "Authorisation" not in request.headers:
+        return RedirectResponse("/docs")
     return templates.TemplateResponse("index.html", {"request": request, "model": model})
 
 

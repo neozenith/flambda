@@ -7,3 +7,5 @@ __pycache__
 *.zip
 requirements.*
 .ipynb_checkpoints
+notebooks/*.jsonl
+notebooks/data/*

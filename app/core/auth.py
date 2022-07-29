@@ -7,6 +7,7 @@ from typing import Optional
 # Third Party
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
+from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from passlib.context import CryptContext
 
@@ -40,13 +41,14 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def authenticate_user(credentials: HTTPBasicCredentials = Depends(basic_scheme)) -> bool:
+def authenticate_user(credentials: HTTPBasicCredentials = Depends(basic_scheme)):
     """Verify the username/password combination."""
     hashed_password = get_user(credentials.username)
     if not hashed_password or not verify_password(credentials.password, hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Basic"},
-        )
+        #  raise HTTPException(
+        #      status_code=status.HTTP_401_UNAUTHORIZED,
+        #      detail="Incorrect username or password",
+        #      headers={"WWW-Authenticate": "Basic"},
+        #  )
+        return RedirectResponse("/docs")
     return True
