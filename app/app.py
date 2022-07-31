@@ -1,6 +1,7 @@
 # Standard Library
 import io
 import os
+from typing import Union
 
 # Third Party
 import awswrangler as wr
@@ -8,13 +9,13 @@ import boto3
 import pandas as pd
 import plotly.express as px
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Request, Response, Cookie
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from mangum import Mangum
 
-from .core.auth import authenticate_user
+from .core.auth import redirect_to_login, exchange_oauth2_code
 
 #  from app.routes.v1.api import router as api_routes
 
@@ -39,7 +40,7 @@ else:
 
 
 @app.get("/vis/{model}", response_class=HTMLResponse)
-async def vis(request: Request, model: str):
+async def vis(request: Request, model: str, auth_token: Union[str, None] = Cookie(default=None)):
     database = "finances"
     query = """
         SELECT
@@ -66,13 +67,21 @@ async def root(request: Request):
     return {"message": "Hello"}
 
 
+@app.get("/auth")
+async def get_auth(request: Request, response: Response, code: str = None):
+    if code:
+        token = await exchange_oauth2_code(code)
+        print(token)
+        return token
+
+
 @app.get(
     "/{model}",
     response_class=HTMLResponse,
 )
 async def model_routes(request: Request, model: str):
-    if "Authorisation" not in request.headers:
-        return RedirectResponse("/docs")
+    if "Authorization" not in request.headers:
+        return redirect_to_login()
     return templates.TemplateResponse("index.html", {"request": request, "model": model})
 
 

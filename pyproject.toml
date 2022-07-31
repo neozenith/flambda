@@ -15,6 +15,7 @@ python-dotenv = "^0.20.0"
 plotly = "^5.9.0"
 pandas = "^1.4.3"
 awswrangler = "^2.16.1"
+httpx = "^0.23.0"
 
 [tool.poetry.dev-dependencies]
 invoke = "^1.7.0"
