@@ -7,7 +7,7 @@ from typing import Optional
 
 # Third Party
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request, Response
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import httpx
@@ -33,7 +33,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def redirect_to_login():
+def redirect_to_login(referer_url="/"):
     """Return a Response to Redirect to Login URI."""
     SCOPES = ["email", "aws.cognito.signin.user.admin", "openid"]
     parameters = {
@@ -42,11 +42,12 @@ def redirect_to_login():
         "scope": "+".join(SCOPES),
         "redirect_uri": COGNITO_REDIRECT_URI,
     }
-
     query_params = "&".join([f"{k}={v}" for k, v in parameters.items()])
     LOGIN_URI = f"{COGNITO_HOST}/login?{query_params}"
 
-    return RedirectResponse(LOGIN_URI)
+    response = RedirectResponse(LOGIN_URI)
+    response.set_cookie(key="redirect_post_login", value=referer_url)
+    return response
 
 
 async def exchange_oauth2_code(code):
@@ -68,3 +69,13 @@ async def exchange_oauth2_code(code):
         token = await client.post(URI, headers=headers, data=data)
         token = token.json()
     return token
+
+
+def handle_auth_redirect(request: Request, response: Response, token: str):
+    referer_url = request.cookies.get("redirect_post_login", "/")
+    referer_url = referer_url if referer_url else "/"
+    response.set_cookie(key="bearer-token", value=token)
+    response.set_cookie(key="redirect_post_login", value="")
+    response.status_code = 307
+    response.headers["location"] = referer_url
+    return response
