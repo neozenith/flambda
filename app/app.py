@@ -47,10 +47,9 @@ async def root(request: Request):
 @app.get("/vis/{model}", response_class=HTMLResponse)
 async def vis(request: Request, model: str):
     """Routes that display plotly visualisations from Athena queries."""
-
     token = request.cookies.get("bearer-token", None)
     if not token:
-        return redirect_to_login(request.url)
+        return redirect_to_login(request)
 
     database = "finances"
     query = """
@@ -74,14 +73,14 @@ async def vis(request: Request, model: str):
 
 
 @app.get(
-    "/{model}",
+    "/models/{model}",
     response_class=HTMLResponse,
 )
 async def model_routes(request: Request, model: str):
     """Routes that display Jinja templated content."""
     token = request.cookies.get("bearer-token", None)
     if not token:
-        return redirect_to_login(request.url)
+        return redirect_to_login(request)
 
     return templates.TemplateResponse("index.html", {"request": request, "model": model})
 

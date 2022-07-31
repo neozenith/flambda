@@ -33,7 +33,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def redirect_to_login(referer_url="/"):
+def redirect_to_login(request):
     """Return a Response to Redirect to Login URI."""
     SCOPES = ["email", "aws.cognito.signin.user.admin", "openid"]
     parameters = {
@@ -46,7 +46,9 @@ def redirect_to_login(referer_url="/"):
     LOGIN_URI = f"{COGNITO_HOST}/login?{query_params}"
 
     response = RedirectResponse(LOGIN_URI)
-    response.set_cookie(key="redirect_post_login", value=referer_url)
+    # Only set a new redirect post login if it is not already set
+    if not request.cookies.get("redirect_post_login", None):
+        response.set_cookie(key="redirect_post_login", value=request.url)
     return response
 
 
