@@ -6,11 +6,11 @@ from functools import lru_cache
 from typing import Optional
 
 # Third Party
+import httpx
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, status, Request, Response
+from fastapi import Depends, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-import httpx
 from passlib.context import CryptContext
 
 load_dotenv()

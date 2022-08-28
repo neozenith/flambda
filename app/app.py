@@ -9,13 +9,13 @@ import boto3
 import pandas as pd
 import plotly.express as px
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Request, Response, Cookie
+from fastapi import Cookie, Depends, FastAPI, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from mangum import Mangum
 
-from .core.auth import redirect_to_login, exchange_oauth2_code, handle_auth_redirect
+from .core.auth import exchange_oauth2_code, handle_auth_redirect, redirect_to_login
 
 #  from app.routes.v1.api import router as api_routes
 

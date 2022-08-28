@@ -9,3 +9,4 @@ requirements.*
 .ipynb_checkpoints
 notebooks/*.jsonl
 notebooks/data/*
+notebooks/results/*
