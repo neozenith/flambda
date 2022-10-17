@@ -75,7 +75,11 @@ def _strip_version_numbers(filename):
     output = []
     with open(filename, "r") as f:
         for line in f:
-            output.append(strip_version_numbers.sub("", line))
+            if "jinja" not in line: # Had to pin jinja2 to 3.0.3 as there was a breaking change in 3.1.0
+                output.append(strip_version_numbers.sub("", line))
+            else:
+                output.append(line)
+
     with open(filename, "w") as f:
         f.write("".join(output))
 
