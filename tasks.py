@@ -66,6 +66,7 @@ def _export_requirements(context, out_dir_base):
     requirements_filepath = f"{out_dir_base}/requirements.in"
     print(f"DEPS: {requirements_filepath} -> {out_dir_base}")
     context.run(f"poetry export --without-hashes -o {requirements_filepath}")
+    # TODO: This is biting me in the arse that it is not actually resolving correct versions in the docker image 
     _strip_version_numbers(requirements_filepath)
     return requirements_filepath
 
