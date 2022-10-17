@@ -35,8 +35,14 @@ def get_login_uri():
 
 def get_jwks(userpool_id, region):
     keys_url = f"https://cognito-idp.{region}.amazonaws.com/{userpool_id}/.well-known/jwks.json"
+    print(f"{keys_url=}")
     with httpx.Client() as client:
-        keys = client.get(keys_url).json()["keys"]
+        keys = client.get(keys_url)
+        print(f"keys#1 {keys=}")
+        keys = keys.json()
+        print(f"keys#2 {keys=}")
+        keys = keys["keys"]
+        print(f"keys#3 {keys=}")
     return keys
 
 
