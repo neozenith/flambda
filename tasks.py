@@ -10,9 +10,6 @@ from dotenv import load_dotenv
 from invoke import task
 from invoke_common_tasks import format, init_config, lint, typecheck  # noqa
 
-# Our Libraries
-from app.core.auth import get_password_hash
-
 load_dotenv()
 AWS_REGION = os.getenv("AWS_REGION")
 AWS_PROFILE = os.getenv("AWS_PROFILE")
@@ -126,11 +123,6 @@ def upload(c, target="app", profile="play", bucket="play-projects-joshpeak", pre
     print(f"Uploading: {src_file} --> s3://{bucket}/{prefix}/{target}.zip")
     response = s3_client.upload_file(src_file, bucket, f"{prefix}/{target}.zip")
     print(response)
-
-
-@task
-def hash_password(c, password):
-    print(get_password_hash(password))
 
 
 @task

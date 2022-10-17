@@ -1,7 +1,8 @@
 # Standard Library
 import io
+import json
 import os
-from typing import Union
+from pprint import pprint as pp
 
 # Third Party
 import awswrangler as wr
@@ -9,21 +10,35 @@ import boto3
 import pandas as pd
 import plotly.express as px
 from dotenv import load_dotenv
-from fastapi import Cookie, Depends, FastAPI, Request, Response
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, Request, Response
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from mangum import Mangum
 
-from .core.auth import exchange_oauth2_code, handle_auth_redirect, redirect_to_login
-
-#  from app.routes.v1.api import router as api_routes
+from .core.auth import (
+    authenticate_request,
+    handle_auth_redirect,
+    handle_logout,
+    redirect_to_login,
+)
+from .core.cognito import (
+    AWS_REGION,
+    COGNITO_USERPOOL_ID,
+    exchange_oauth2_code,
+    get_jwks,
+)
 
 load_dotenv()
 
-app = FastAPI()
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-templates = Jinja2Templates(directory="app/templates")
+##################### BEGIN LAMBDA COLD START CODE #####################
+
+# instead of re-downloading the public keys every time
+# we download them only on cold start
+# https://aws.amazon.com/blogs/compute/container-reuse-in-lambda/
+JWKS = get_jwks(userpool_id=COGNITO_USERPOOL_ID, region=AWS_REGION)
+for k in JWKS:
+    print(k)
 
 boto3_session = None
 if os.getenv("AWS_PROFILE", None) is not None:
@@ -38,6 +53,12 @@ else:
         region_name=os.getenv("AWS_REGION"),
     )
 
+##################### END LAMBDA COLD START CODE #####################
+
+app = FastAPI()
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="app/templates")
+
 
 @app.get("/")
 async def root(request: Request):
@@ -47,8 +68,8 @@ async def root(request: Request):
 @app.get("/vis/{model}", response_class=HTMLResponse)
 async def vis(request: Request, model: str):
     """Routes that display plotly visualisations from Athena queries."""
-    token = request.cookies.get("bearer-token", None)
-    if not token:
+    authenticated_claims = authenticate_request(request, JWKS)
+    if not authenticated_claims:
         return redirect_to_login(request)
 
     database = "finances"
@@ -78,8 +99,8 @@ async def vis(request: Request, model: str):
 )
 async def model_routes(request: Request, model: str):
     """Routes that display Jinja templated content."""
-    token = request.cookies.get("bearer-token", None)
-    if not token:
+    authenticated_claims = authenticate_request(request, JWKS)
+    if not authenticated_claims:
         return redirect_to_login(request)
 
     return templates.TemplateResponse("index.html", {"request": request, "model": model})
@@ -89,18 +110,14 @@ async def model_routes(request: Request, model: str):
 async def get_auth(request: Request, response: Response, code: str = None):
     if code:
         token = await exchange_oauth2_code(code)
-        print(token)
-        response = handle_auth_redirect(request, response, token)
-    return response
+        return handle_auth_redirect(request, response, token)
+    else:
+        return response
 
 
 @app.get("/logout")
 async def logout(request: Request, response: Response, code: str = None):
-    response.set_cookie(key="bearer-token", value="")
-    response.status_code = 307
-    response.headers["location"] = "/"
-    return response
+    return handle_logout(response)
 
 
-#  app.include_router(api_routes, prefix="/api/v1")
 handler = Mangum(app)
